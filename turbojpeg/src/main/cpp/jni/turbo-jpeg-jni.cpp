@@ -20,7 +20,7 @@ Java_com_alpha_turbojpeg_TurboJpegJni_tjInitCompress(JNIEnv *env, jobject thiz) 
     LOGD("tjInitCompress");
     tjhandle tjInstance = NULL;
     tjInstance = tjInitCompress();
-    if (tjInstance) {
+    if (tjInstance != NULL) {
         return (long) tjInstance;
     }
     return 0;
@@ -97,6 +97,11 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjEncodeYUV3(JNIEnv
 
 JNIEXPORT jlong JNICALL
 Java_com_alpha_turbojpeg_TurboJpegJni_tjInitDecompress(JNIEnv *env, jobject thiz) {
+    tjhandle tjInstance = NULL;
+    tjInstance = tjInitDecompress();
+    if (tjInstance != NULL) {
+        return (long) tjInstance;
+    }
     return 0;
 }
 
@@ -104,6 +109,17 @@ JNIEXPORT jint JNICALL
 Java_com_alpha_turbojpeg_TurboJpegJni_tjDecompressHeader3(JNIEnv *env, jobject thiz, jlong handle,
                                                           jbyteArray jpegBuf, jlong jpegSize,
                                                           jobject jpegHeader) {
+    jbyte *bytes = env->GetByteArrayElements(jpegBuf, 0);
+    unsigned char *buf = (unsigned char *) bytes;
+
+    int width = 0, height = 0;
+    int jpegSubsamp = -1, colorSpace = -1;
+    tjhandle tjInstance = (tjhandle)handle;
+    if (tjDecompressHeader3(tjInstance, buf, jpegSize, &width, &height, &jpegSubsamp, &colorSpace) != 0)
+    {
+        return -1;
+    }
+
     return 0;
 }
 
