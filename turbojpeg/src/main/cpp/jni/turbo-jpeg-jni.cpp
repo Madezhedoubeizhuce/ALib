@@ -13,6 +13,9 @@ extern "C" {
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 
+const char *JPEGHEADER_CLASS = "com/alpha/turbojpeg/bean/JpegHeader";
+const char *IMAGEBUF_CLASS = "com/alpha/turbojpeg/bean/ImageBuf";
+
 char *ConvertJByteArrayToChars(JNIEnv *env, jbyteArray byte_array);
 
 JNIEXPORT jlong JNICALL
@@ -109,16 +112,32 @@ JNIEXPORT jint JNICALL
 Java_com_alpha_turbojpeg_TurboJpegJni_tjDecompressHeader3(JNIEnv *env, jobject thiz, jlong handle,
                                                           jbyteArray jpegBuf, jlong jpegSize,
                                                           jobject jpegHeader) {
+    if (jpegHeader == nullptr) {
+        return -1;
+    }
+    tjhandle tjInstance = (tjhandle) handle;
+
     jbyte *bytes = env->GetByteArrayElements(jpegBuf, 0);
     unsigned char *buf = (unsigned char *) bytes;
 
     int width = 0, height = 0;
     int jpegSubsamp = -1, colorSpace = -1;
-    tjhandle tjInstance = (tjhandle)handle;
-    if (tjDecompressHeader3(tjInstance, buf, jpegSize, &width, &height, &jpegSubsamp, &colorSpace) != 0)
-    {
+
+    if (tjDecompressHeader3(tjInstance, buf, jpegSize, &width, &height, &jpegSubsamp,
+                            &colorSpace) != 0) {
         return -1;
     }
+
+    jclass headerClass = env->FindClass(JPEGHEADER_CLASS);
+    jfieldID width_field = (env)->GetFieldID(headerClass, "width", "I");
+    jfieldID height_field = (env)->GetFieldID(headerClass, "height", "I");
+    jfieldID jepg_subsamp_field = (env)->GetFieldID(headerClass, "jepgSubsamp", "I");
+    jfieldID jpeg_colorspace_field = (env)->GetFieldID(headerClass, "jpegColorspace", "I");
+
+    (env)->SetIntField(jpegHeader, width_field, width);
+    (env)->SetIntField(jpegHeader, height_field, height);
+    (env)->SetIntField(jpegHeader, jepg_subsamp_field, jpegSubsamp);
+    (env)->SetIntField(jpegHeader, jpeg_colorspace_field, colorSpace);
 
     return 0;
 }
@@ -129,6 +148,37 @@ Java_com_alpha_turbojpeg_TurboJpegJni_tjDecompress2(JNIEnv *env, jobject thiz,
                                                     jlong jpegSize, jobject dstBuf,
                                                     jint width, jint pitch, jint height,
                                                     jint pixelFormat, jint flag) {
+    if (dstBuf == nullptr) {
+        return -1;
+    }
+
+    tjhandle tjInstance = (tjhandle) handle;
+
+    unsigned char *dst_buf_native = nullptr;
+
+    jbyte *bytes = env->GetByteArrayElements(jpegBuf, 0);
+    unsigned char *buf = (unsigned char *) bytes;
+
+    int size = width * height * tjPixelSize[pixelFormat];
+    dst_buf_native = tjAlloc(size);
+    if (dst_buf_native == nullptr) {
+        return -1;
+    }
+
+    if (tjDecompress2(tjInstance, buf, jpegSize, dst_buf_native,
+                      width, pitch, height, pixelFormat, flag) != 0) {
+        return -1;
+    }
+    jbyte *dst_buf_bytes = (jbyte *) dst_buf_native;
+
+    jclass bufClass = env->FindClass(IMAGEBUF_CLASS);
+    jfieldID buf_field = (env)->GetFieldID(bufClass, "buf", "[B");
+
+    jbyteArray dstBufArray = env->NewByteArray(size);
+
+    env->SetByteArrayRegion(dstBufArray, 0, size, dst_buf_bytes);
+    env->SetObjectField(dstBuf, buf_field, dstBufArray);
+
     return 0;
 }
 

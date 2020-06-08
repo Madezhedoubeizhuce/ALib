@@ -1,4 +1,4 @@
-package com.example.turbojpeg;
+package com.alpha.turbojpeg;
 
 import org.junit.Test;
 

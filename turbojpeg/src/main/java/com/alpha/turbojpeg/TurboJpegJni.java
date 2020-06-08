@@ -1,5 +1,9 @@
 package com.alpha.turbojpeg;
 
+import com.alpha.turbojpeg.bean.ImageBuf;
+import com.alpha.turbojpeg.bean.JpegHeader;
+import com.alpha.turbojpeg.bean.TjTransform;
+
 public class TurboJpegJni {
     static {
         System.loadLibrary("turbojpeg-jni");
