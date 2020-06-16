@@ -39,7 +39,7 @@ public class TurboJpegJni {
 
     public native long tjInitTransform();
 
-    public native int tjTransform(long handle, byte[] jpegBuf, long jpegSize, ImageBuf dstBuf,
+    public native int tjTransform(long handle, byte[] jpegBuf, long jpegSize,int n, ImageBuf dstBuf,
                                   TjTransform transform, int flags);
 
     public native int tjDeDestroy(long handle);

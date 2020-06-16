@@ -13,7 +13,7 @@ extern "C" {
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjInitCompress
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -21,7 +21,7 @@ JNIEXPORT jlong JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjInitCompress
  * Signature: (J[BIIIILcom/alpha/turbojpeg/ImageBuf;II)I
  */
 JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjCompress2
-  (JNIEnv *, jobject, jlong, jbyteArray, jint, jint, jint, jint, jobject, jint, jint);
+        (JNIEnv *, jobject, jlong, jbyteArray, jint, jint, jint, jint, jobject, jint, jint);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -29,7 +29,7 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjCompress2
  * Signature: (J[BIIIILcom/alpha/turbojpeg/ImageBuf;II)I
  */
 JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjCompressFromYUV
-  (JNIEnv *, jobject, jlong, jbyteArray, jint, jint, jint, jint, jobject, jint, jint);
+        (JNIEnv *, jobject, jlong, jbyteArray, jint, jint, jint, jint, jobject, jint, jint);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -37,7 +37,7 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjCompressFromYUV
  * Signature: (III)J
  */
 JNIEXPORT jlong JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjBufSize
-  (JNIEnv *, jobject, jint, jint, jint);
+        (JNIEnv *, jobject, jint, jint, jint);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -45,7 +45,7 @@ JNIEXPORT jlong JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjBufSize
  * Signature: (III)J
  */
 JNIEXPORT jlong JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjBufSizeYUV2
-  (JNIEnv *, jobject, jint, jint, jint);
+        (JNIEnv *, jobject, jint, jint, jint);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -53,7 +53,7 @@ JNIEXPORT jlong JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjBufSizeYUV2
  * Signature: (J[BIIIILcom/alpha/turbojpeg/ImageBuf;III)I
  */
 JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjEncodeYUV3
-  (JNIEnv *, jobject, jlong, jbyteArray, jint, jint, jint, jint, jobject, jint, jint, jint);
+        (JNIEnv *, jobject, jlong, jbyteArray, jint, jint, jint, jint, jobject, jint, jint, jint);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -61,7 +61,7 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjEncodeYUV3
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjInitDecompress
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -69,7 +69,7 @@ JNIEXPORT jlong JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjInitDecompress
  * Signature: (J[BJLcom/alpha/turbojpeg/JpegHeader;)I
  */
 JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjDecompressHeader3
-  (JNIEnv *, jobject, jlong, jbyteArray, jlong, jobject);
+        (JNIEnv *, jobject, jlong, jbyteArray, jlong, jobject);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -77,7 +77,7 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjDecompressHeader3
  * Signature: (J[BJLcom/alpha/turbojpeg/ImageBuf;IIIII)I
  */
 JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjDecompress2
-  (JNIEnv *, jobject, jlong, jbyteArray, jlong, jobject, jint, jint, jint, jint, jint);
+        (JNIEnv *, jobject, jlong, jbyteArray, jlong, jobject, jint, jint, jint, jint, jint);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -85,7 +85,7 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjDecompress2
  * Signature: (J[BJLcom/alpha/turbojpeg/ImageBuf;IIII)I
  */
 JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjDecompressToYUV2
-  (JNIEnv *, jobject, jlong, jbyteArray, jlong, jobject, jint, jint, jint, jint);
+        (JNIEnv *, jobject, jlong, jbyteArray, jlong, jobject, jint, jint, jint, jint);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -93,7 +93,7 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjDecompressToYUV2
  * Signature: (J[BIILcom/alpha/turbojpeg/ImageBuf;IIIII)I
  */
 JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjDecodeYUV
-  (JNIEnv *, jobject, jlong, jbyteArray, jint, jint, jobject, jint, jint, jint, jint, jint);
+        (JNIEnv *, jobject, jlong, jbyteArray, jint, jint, jobject, jint, jint, jint, jint, jint);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -101,7 +101,7 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjDecodeYUV
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjInitTransform
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -109,7 +109,7 @@ JNIEXPORT jlong JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjInitTransform
  * Signature: (J[BJLcom/alpha/turbojpeg/ImageBuf;Lcom/alpha/turbojpeg/TjTransform;I)I
  */
 JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjTransform
-  (JNIEnv *, jobject, jlong, jbyteArray, jlong, jobject, jobject, jint);
+        (JNIEnv *, jobject, jlong, jbyteArray, jlong, jint, jobject, jobject, jint);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -117,7 +117,7 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjTransform
  * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjDeDestroy
-  (JNIEnv *, jobject, jlong);
+        (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -125,7 +125,7 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjDeDestroy
  * Signature: (I)[B
  */
 JNIEXPORT jbyteArray JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjAlloc
-  (JNIEnv *, jobject, jint);
+        (JNIEnv *, jobject, jint);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -133,7 +133,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjAlloc
  * Signature: (J)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjGetErrorStr2
-  (JNIEnv *, jobject, jlong);
+        (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
@@ -141,7 +141,7 @@ JNIEXPORT jstring JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjGetErrorStr2
  * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjGetErrorCode
-  (JNIEnv *, jobject, jlong);
+        (JNIEnv *, jobject, jlong);
 
 #ifdef __cplusplus
 }

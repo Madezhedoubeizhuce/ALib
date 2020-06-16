@@ -15,6 +15,7 @@ extern "C" {
 
 const char *JPEGHEADER_CLASS = "com/alpha/turbojpeg/bean/JpegHeader";
 const char *IMAGEBUF_CLASS = "com/alpha/turbojpeg/bean/ImageBuf";
+const char *TJTRANSFORM_CLASS = "com/alpha/turbojpeg/bean/TjTransform";
 
 char *ConvertJByteArrayToChars(JNIEnv *env, jbyteArray byte_array);
 
@@ -100,9 +101,9 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjEncodeYUV3(JNIEnv
 
 JNIEXPORT jlong JNICALL
 Java_com_alpha_turbojpeg_TurboJpegJni_tjInitDecompress(JNIEnv *env, jobject thiz) {
-    tjhandle tjInstance = NULL;
+    tjhandle tjInstance = nullptr;
     tjInstance = tjInitDecompress();
-    if (tjInstance != NULL) {
+    if (tjInstance != nullptr) {
         return (long) tjInstance;
     }
     return 0;
@@ -205,6 +206,11 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjDecodeYUV(JNIEnv 
 
 JNIEXPORT jlong JNICALL
 Java_com_alpha_turbojpeg_TurboJpegJni_tjInitTransform(JNIEnv *env, jobject thiz) {
+    tjhandle tjInstance = nullptr;
+    tjInstance = tjInitTransform();
+    if (tjInstance != nullptr) {
+        return (long) tjInstance;
+    }
     return 0;
 }
 
@@ -212,9 +218,46 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjTransform(JNIEnv 
                                                                          jlong handle,
                                                                          jbyteArray jpegBuf,
                                                                          jlong jpegSize,
+                                                                         jint n,
                                                                          jobject dstBuf,
                                                                          jobject transform,
                                                                          jint flags) {
+    if (dstBuf == nullptr || transform == nullptr) {
+        return -1;
+    }
+
+    tjhandle tjInstance = (tjhandle) handle;
+
+    jbyte *bytes = env->GetByteArrayElements(jpegBuf, 0);
+    unsigned char *buf = (unsigned char *) bytes;
+
+    unsigned char *dst_buf_native = nullptr;
+    unsigned long dstSize = 0;
+
+    tjtransform xform;
+    memset(&xform, 0, sizeof(tjtransform));
+    jclass transformClass = env->FindClass(TJTRANSFORM_CLASS);
+    jfieldID op_field = (env)->GetFieldID(transformClass, "op", "I");
+    jfieldID options_field = (env)->GetFieldID(transformClass, "options", "I");
+    int op = env->GetIntField(transform, op_field);
+    int options = env->GetIntField(transform, options_field);
+    xform.op = op;
+    xform.options |= options;
+
+    if (tjTransform(tjInstance, buf, jpegSize, n, &dst_buf_native, &dstSize, &xform, flags) != 0) {
+        return -1;
+    }
+
+    jbyte *dst_buf_bytes = (jbyte *) dst_buf_native;
+
+    jclass bufClass = env->FindClass(IMAGEBUF_CLASS);
+    jfieldID buf_field = (env)->GetFieldID(bufClass, "buf", "[B");
+
+    jbyteArray dstBufArray = env->NewByteArray(dstSize);
+
+    env->SetByteArrayRegion(dstBufArray, 0, dstSize, dst_buf_bytes);
+    env->SetObjectField(dstBuf, buf_field, dstBufArray);
+
     return 0;
 }
 

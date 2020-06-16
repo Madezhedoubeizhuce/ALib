@@ -8,9 +8,12 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.alpha.turbojpeg.bean.ImageBuf;
 import com.alpha.turbojpeg.bean.JpegHeader;
+import com.alpha.turbojpeg.bean.TjTransform;
 import com.alpha.turbojpeg.enums.TJCS;
 import com.alpha.turbojpeg.enums.TJPF;
 import com.alpha.turbojpeg.enums.TJSAMP;
+import com.alpha.turbojpeg.enums.TJXOP;
+import com.alpha.turbojpeg.enums.TjConstants;
 import com.alpha.turbojpeg.util.AssetFileExtraction;
 import com.alpha.turbojpeg.util.ImageUtil;
 
@@ -69,6 +72,30 @@ public class TurboJpegJniTest {
             ImageUtil.writeImageFile(dstBuf.buf, dstDir + "/out", "test.rgb");
         } catch (IOException e) {
             Log.e(TAG, "testDecompressJpeg: ", e);
+        }
+    }
+
+    @Test
+    public void testTransform() {
+        try {
+            long handle = jpegJni.tjInitTransform();
+            assertNotEquals(0, handle);
+
+            byte[] jpegBuf = ImageUtil.readImageFile(dstDir, "test.jpg");
+            ImageBuf dstBuf = new ImageBuf();
+            TjTransform tjTransform = new TjTransform();
+            tjTransform.op = TJXOP.TJXOP_HFLIP.ordinal();
+            tjTransform.options = TjConstants.TJXOPT_TRIM;
+
+            jpegJni.tjTransform(handle, jpegBuf, jpegBuf.length, 1, dstBuf, tjTransform, 0);
+
+            assertNotNull(dstBuf.buf);
+            assertTrue(dstBuf.buf.length > 0);
+
+            // 保存转换后的rgb文件，使用工具查看文件是否正常
+            ImageUtil.writeImageFile(dstBuf.buf, dstDir + "/out", "transfrom_test.jpg");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
