@@ -12,26 +12,26 @@ public class TurboJpegJni {
     public native long tjInitCompress();
 
     public native int tjCompress2(long handle, byte[] srcBuf, int width, int pitch, int height, int pixelFormat,
-                                  ImageBuf jpegImage, int jpegQual, int flags);
+                                  ImageBuf jpegImage, int jpegSubsamp, int jpegQual, int flags);
 
-    public native int tjCompressFromYUV(long handle, byte[] srcBuf, int width, int pitch, int height, int pixelFormat,
+    public native int tjCompressFromYUV(long handle, byte[] srcBuf, int width, int pad, int height, int subsamp,
                                         ImageBuf jpegImage, int jpegQual, int flags);
 
     public native long tjBufSize(int width, int height, int jpegSubsamp);
 
-    public native long tjBufSizeYUV2(int width, int height, int jpegSubsamp);
+    public native long tjBufSizeYUV2(int width, int pad, int height, int jpegSubsamp);
 
     public native int tjEncodeYUV3(long handle, byte[] srcBuf, int width, int pitch, int height, int pixelFormat,
                                    ImageBuf dstBuf, int pad, int subsamp, int flags);
 
     public native long tjInitDecompress();
 
-    public native int tjDecompressHeader3(long handle, byte[] jpegBuf, long jpegSize, JpegHeader jpegHeader);
+    public native int tjDecompressHeader3(long handle, byte[] jpegBuf, JpegHeader jpegHeader);
 
-    public native int tjDecompress2(long handle, byte[] jpegBuf, long jpegSize, ImageBuf dstBuf,
+    public native int tjDecompress2(long handle, byte[] jpegBuf, ImageBuf dstBuf,
                                     int width, int pitch, int height, int pixelFormat, int flag);
 
-    public native int tjDecompressToYUV2(long handle, byte[] jpegBuf, long jpegSize, ImageBuf dstBuf,
+    public native int tjDecompressToYUV2(long handle, byte[] jpegBuf, byte[] dstBuf,
                                          int width, int pad, int height, int flags);
 
     public native int tjDecodeYUV(long handle, byte[] srcBuf, int pad, int subsamp, ImageBuf dstBuf, int width,
@@ -39,12 +39,10 @@ public class TurboJpegJni {
 
     public native long tjInitTransform();
 
-    public native int tjTransform(long handle, byte[] jpegBuf, long jpegSize,int n, ImageBuf dstBuf,
+    public native int tjTransform(long handle, byte[] jpegBuf, int n, ImageBuf dstBuf,
                                   TjTransform transform, int flags);
 
-    public native int tjDeDestroy(long handle);
-
-    public native byte[] tjAlloc(int bytes);
+    public native int tjDestroy(long handle);
 
     public native String tjGetErrorStr2(long handle);
 
