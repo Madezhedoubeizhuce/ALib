@@ -18,6 +18,7 @@ const char *IMAGEBUF_CLASS = "com/alpha/turbojpeg/bean/ImageBuf";
 const char *TJTRANSFORM_CLASS = "com/alpha/turbojpeg/bean/TjTransform";
 
 jstring charTojstring(JNIEnv *env, char *pat);
+void convertToImageBuf(JNIEnv *env, jobject imgBuf, unsigned char *nativeBuf, unsigned long size);
 
 JNIEXPORT jlong JNICALL
 Java_com_alpha_turbojpeg_TurboJpegJni_tjInitCompress(JNIEnv *env, jobject thiz) {
@@ -57,15 +58,7 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjCompress2(JNIEnv 
         return -1;
     }
 
-    jbyte *dst_buf_bytes = (jbyte *) jpegBuf;
-
-    jclass bufClass = env->FindClass(IMAGEBUF_CLASS);
-    jfieldID buf_field = (env)->GetFieldID(bufClass, "buf", "[B");
-
-    jbyteArray dstBufArray = env->NewByteArray(jpegSize);
-
-    env->SetByteArrayRegion(dstBufArray, 0, jpegSize, dst_buf_bytes);
-    env->SetObjectField(jpegImage, buf_field, dstBufArray);
+    convertToImageBuf(env, jpegImage, jpegBuf, jpegSize);
 
     return 0;
 }
@@ -93,15 +86,7 @@ Java_com_alpha_turbojpeg_TurboJpegJni_tjCompressFromYUV(JNIEnv *env, jobject thi
         return -2;
     }
 
-    jbyte *dst_buf_bytes = (jbyte *) jpegBuf;
-
-    jclass bufClass = env->FindClass(IMAGEBUF_CLASS);
-    jfieldID buf_field = (env)->GetFieldID(bufClass, "buf", "[B");
-
-    jbyteArray dstBufArray = env->NewByteArray(jpegSize);
-
-    env->SetByteArrayRegion(dstBufArray, 0, jpegSize, dst_buf_bytes);
-    env->SetObjectField(jpegImage, buf_field, dstBufArray);
+    convertToImageBuf(env, jpegImage, jpegBuf, jpegSize);
 
     return 0;
 }
@@ -125,9 +110,27 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjEncodeYUV3(JNIEnv
                                                                           jint width, jint pitch,
                                                                           jint height,
                                                                           jint pixelFormat,
-                                                                          jobject dstBuf, jint pad,
+                                                                          jbyteArray dstBuf,
+                                                                          jint pad,
                                                                           jint subsamp,
                                                                           jint flags) {
+    if (dstBuf == nullptr) {
+        return -1;
+    }
+
+    tjhandle tjInstance = (tjhandle) handle;
+
+    jbyte *bytes = env->GetByteArrayElements(srcBuf, 0);
+    unsigned char *src_native_buf = (unsigned char *) bytes;
+
+    bytes = env->GetByteArrayElements(dstBuf, 0);
+    unsigned char *dst_native_buf = (unsigned char *) bytes;
+
+    if (tjEncodeYUV3(tjInstance, src_native_buf, width, pitch, height, pixelFormat,
+                     dst_native_buf, pad, subsamp, flags) != 0) {
+        return -2;
+    }
+
     return 0;
 }
 
@@ -202,15 +205,8 @@ Java_com_alpha_turbojpeg_TurboJpegJni_tjDecompress2(JNIEnv *env, jobject thiz,
                       width, pitch, height, pixelFormat, flag) != 0) {
         return -1;
     }
-    jbyte *dst_buf_bytes = (jbyte *) dst_buf_native;
 
-    jclass bufClass = env->FindClass(IMAGEBUF_CLASS);
-    jfieldID buf_field = (env)->GetFieldID(bufClass, "buf", "[B");
-
-    jbyteArray dstBufArray = env->NewByteArray(size);
-
-    env->SetByteArrayRegion(dstBufArray, 0, size, dst_buf_bytes);
-    env->SetObjectField(dstBuf, buf_field, dstBufArray);
+    convertToImageBuf(env, dstBuf, dst_buf_native, size);
 
     return 0;
 }
@@ -268,15 +264,7 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjDecodeYUV(JNIEnv 
         return -2;
     }
 
-    jbyte *dst_buf_bytes = (jbyte *) dst_buf_native;
-
-    jclass bufClass = env->FindClass(IMAGEBUF_CLASS);
-    jfieldID buf_field = (env)->GetFieldID(bufClass, "buf", "[B");
-
-    jbyteArray dstBufArray = env->NewByteArray(size);
-
-    env->SetByteArrayRegion(dstBufArray, 0, size, dst_buf_bytes);
-    env->SetObjectField(dstBuf, buf_field, dstBufArray);
+    convertToImageBuf(env, dstBuf, dst_buf_native, size);
 
     return 0;
 }
@@ -325,22 +313,14 @@ JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjTransform(JNIEnv 
         return -1;
     }
 
-    jbyte *dst_buf_bytes = (jbyte *) dst_buf_native;
-
-    jclass bufClass = env->FindClass(IMAGEBUF_CLASS);
-    jfieldID buf_field = (env)->GetFieldID(bufClass, "buf", "[B");
-
-    jbyteArray dstBufArray = env->NewByteArray(dstSize);
-
-    env->SetByteArrayRegion(dstBufArray, 0, dstSize, dst_buf_bytes);
-    env->SetObjectField(dstBuf, buf_field, dstBufArray);
+    convertToImageBuf(env, dstBuf, dst_buf_native, dstSize);
 
     return 0;
 }
 
 JNIEXPORT jint JNICALL
 Java_com_alpha_turbojpeg_TurboJpegJni_tjDestroy(JNIEnv *env, jobject thiz, jlong handle) {
-    return tjDestroy((tjhandle)handle);
+    return tjDestroy((tjhandle) handle);
 }
 
 JNIEXPORT jstring JNICALL
@@ -362,6 +342,18 @@ jstring charTojstring(JNIEnv *env, char *pat) {
     jstring encoding = (env)->NewStringUTF("UTF8");
     //将byte数组转换为java String,并输出
     return (jstring) (env)->NewObject(strClass, ctorID, bytes, encoding);
+}
+
+void convertToImageBuf(JNIEnv *env, jobject imgBuf, unsigned char *nativeBuf, unsigned long size) {
+    jbyte *dst_buf_bytes = (jbyte *) nativeBuf;
+
+    jclass bufClass = env->FindClass(IMAGEBUF_CLASS);
+    jfieldID buf_field = (env)->GetFieldID(bufClass, "buf", "[B");
+
+    jbyteArray dstBufArray = env->NewByteArray(size);
+
+    env->SetByteArrayRegion(dstBufArray, 0, size, dst_buf_bytes);
+    env->SetObjectField(imgBuf, buf_field, dstBufArray);
 }
 
 JNIEXPORT jint JNICALL

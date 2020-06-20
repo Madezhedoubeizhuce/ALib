@@ -44,50 +44,46 @@ public class TurboJpegJniTest {
 
     @Test
     public void testDecompressJpeg() {
-        try {
-            long handle = jpegJni.tjInitDecompress();
-            assertNotEquals(0, handle);
+        long handle = jpegJni.tjInitDecompress();
+        assertNotEquals(0, handle);
 
+        try {
             byte[] jpegBuf = ImageUtil.readImageFile(dstDir, "test.jpg");
 
-            JpegHeader header = new JpegHeader();
-            jpegJni.tjDecompressHeader3(handle, jpegBuf, header);
-
-            Log.i(TAG, "testDecompressJpeg: header width " + header.width + ", height " + header.height +
-                    ", jepgSubsamp " + header.jepgSubsamp + ", jpegColorspace " + header.jpegColorspace);
-
-            assertEquals(500, header.width);
-            assertEquals(333, header.height);
-            assertEquals(TJSAMP.TJSAMP_444.ordinal(), header.jepgSubsamp);
-            assertEquals(TJCS.TJCS_YCbCr.ordinal(), header.jpegColorspace);
+            JpegHeader header = readJpegHeader();
 
             ImageBuf dstBuf = new ImageBuf();
-            jpegJni.tjDecompress2(handle, jpegBuf, dstBuf, header.width,
+            int ret = jpegJni.tjDecompress2(handle, jpegBuf, dstBuf, header.width,
                     0, header.height, TJPF.TJPF_RGB.ordinal(), 0);
+            assertEquals(0, ret);
 
             assertNotNull(dstBuf.buf);
             assertTrue(dstBuf.buf.length > 0);
 
             // 保存转换后的rgb文件，使用工具查看文件是否正常
-            ImageUtil.writeImageFile(dstBuf.buf, dstDir + "/out", "test.rgb");
+            ImageUtil.writeImageFile(dstBuf.buf, dstDir + "/out", "decompress_test.rgb");
         } catch (IOException e) {
             Log.e(TAG, "testDecompressJpeg: ", e);
+        } finally {
+            int ret = jpegJni.tjDestroy(handle);
+            assertEquals(0, ret);
         }
     }
 
     @Test
     public void testTransform() {
-        try {
-            long handle = jpegJni.tjInitTransform();
-            assertNotEquals(0, handle);
+        long handle = jpegJni.tjInitTransform();
+        assertNotEquals(0, handle);
 
+        try {
             byte[] jpegBuf = ImageUtil.readImageFile(dstDir, "test.jpg");
             ImageBuf dstBuf = new ImageBuf();
             TjTransform tjTransform = new TjTransform();
             tjTransform.op = TJXOP.TJXOP_HFLIP.ordinal();
             tjTransform.options = TjConstants.TJXOPT_TRIM;
 
-            jpegJni.tjTransform(handle, jpegBuf, 1, dstBuf, tjTransform, 0);
+            int ret = jpegJni.tjTransform(handle, jpegBuf, 1, dstBuf, tjTransform, 0);
+            assertEquals(0, ret);
 
             assertNotNull(dstBuf.buf);
             assertTrue(dstBuf.buf.length > 0);
@@ -96,19 +92,48 @@ public class TurboJpegJniTest {
             ImageUtil.writeImageFile(dstBuf.buf, dstDir + "/out", "transfrom_test.jpg");
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            int ret = jpegJni.tjDestroy(handle);
+            assertEquals(0, ret);
         }
     }
 
     @Test
     public void testDecompressToYUV() {
-        try {
-            long handle = jpegJni.tjInitDecompress();
-            assertNotEquals(0, handle);
+        long handle = jpegJni.tjInitDecompress();
+        assertNotEquals(0, handle);
 
+        try {
             byte[] jpegBuf = ImageUtil.readImageFile(dstDir, "test.jpg");
 
-            JpegHeader header = new JpegHeader();
-            jpegJni.tjDecompressHeader3(handle, jpegBuf, header);
+            JpegHeader header = readJpegHeader();
+
+            int pad = 1;
+            long bufSize = jpegJni.tjBufSizeYUV2(header.width, pad, header.height, header.jepgSubsamp);
+            assertTrue(bufSize > 0);
+            byte[] dstBuf = new byte[(int) bufSize];
+            int ret = jpegJni.tjDecompressToYUV2(handle, jpegBuf, dstBuf, header.width, pad, header.height, 0);
+            assertEquals(0, ret);
+            ImageUtil.writeImageFile(dstBuf, dstDir + "/out", "decompress_to_yuv_test.yuv");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            int ret = jpegJni.tjDestroy(handle);
+            assertEquals(0, ret);
+        }
+    }
+
+    private JpegHeader readJpegHeader() throws IOException {
+        long handle = jpegJni.tjInitDecompress();
+        assertNotEquals(0, handle);
+
+        JpegHeader header;
+        try {
+            byte[] jpegBuf = ImageUtil.readImageFile(dstDir, "test.jpg");
+
+            header = new JpegHeader();
+            int ret = jpegJni.tjDecompressHeader3(handle, jpegBuf, header);
+            assertEquals(0, ret);
 
             Log.i(TAG, "testDecompressJpeg: header width " + header.width + ", height " + header.height +
                     ", jepgSubsamp " + header.jepgSubsamp + ", jpegColorspace " + header.jpegColorspace);
@@ -117,57 +142,43 @@ public class TurboJpegJniTest {
             assertEquals(333, header.height);
             assertEquals(TJSAMP.TJSAMP_444.ordinal(), header.jepgSubsamp);
             assertEquals(TJCS.TJCS_YCbCr.ordinal(), header.jpegColorspace);
-
-            int pad = 1;
-            long bufSize = jpegJni.tjBufSizeYUV2(header.width, pad, header.height, header.jepgSubsamp);
-            byte[] dstBuf = new byte[(int) bufSize];
-            jpegJni.tjDecompressToYUV2(handle, jpegBuf, dstBuf, header.width, pad, header.height, 0);
-            ImageUtil.writeImageFile(dstBuf, dstDir + "/out", "decompress_yuv_test.yuv");
-        } catch (IOException e) {
-            e.printStackTrace();
+        } finally {
+            int ret = jpegJni.tjDestroy(handle);
+            assertEquals(0, ret);
         }
-    }
-
-    private JpegHeader readJpegHeader() throws IOException {
-        long handle = jpegJni.tjInitDecompress();
-        assertNotEquals(0, handle);
-
-        byte[] jpegBuf = ImageUtil.readImageFile(dstDir, "test.jpg");
-
-        JpegHeader header = new JpegHeader();
-        jpegJni.tjDecompressHeader3(handle, jpegBuf, header);
-
-        Log.i(TAG, "testDecompressJpeg: header width " + header.width + ", height " + header.height +
-                ", jepgSubsamp " + header.jepgSubsamp + ", jpegColorspace " + header.jpegColorspace);
 
         return header;
     }
 
     @Test
     public void testCompress() {
+        long handle = jpegJni.tjInitCompress();
+        assertNotEquals(0, handle);
+
         try {
             JpegHeader header = readJpegHeader();
 
-            long handle = jpegJni.tjInitCompress();
-            assertNotEquals(0, handle);
-
             byte[] srcBuf = ImageUtil.readImageFile(dstDir, "test.rgb");
             ImageBuf jpegBuf = new ImageBuf();
-            jpegJni.tjCompress2(handle, srcBuf, header.width, 0, header.height,
+            int ret = jpegJni.tjCompress2(handle, srcBuf, header.width, 0, header.height,
                     TJPF.TJPF_RGB.ordinal(), jpegBuf, header.jepgSubsamp, 95, 0);
+            assertEquals(0, ret);
             ImageUtil.writeImageFile(jpegBuf.buf, dstDir + "/out", "compress_test.jpg");
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            int ret = jpegJni.tjDestroy(handle);
+            assertEquals(0, ret);
         }
     }
 
     @Test
     public void testCompressFromYUV() {
+        long handle = jpegJni.tjInitCompress();
+        assertNotEquals(0, handle);
+
         try {
             JpegHeader header = readJpegHeader();
-
-            long handle = jpegJni.tjInitCompress();
-            assertNotEquals(0, handle);
 
             byte[] srcBuf = ImageUtil.readImageFile(dstDir, "test.yuv");
             ImageBuf jpegBuf = new ImageBuf();
@@ -177,16 +188,19 @@ public class TurboJpegJniTest {
             ImageUtil.writeImageFile(jpegBuf.buf, dstDir + "/out", "compress_from_yuv_test.jpg");
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            int ret = jpegJni.tjDestroy(handle);
+            assertEquals(0, ret);
         }
     }
 
     @Test
     public void testDecodeYUV() {
+        long handle = jpegJni.tjInitDecompress();
+        assertNotEquals(0, handle);
+
         try {
             JpegHeader header = readJpegHeader();
-
-            long handle = jpegJni.tjInitDecompress();
-            assertNotEquals(0, handle);
 
             byte[] srcBuf = ImageUtil.readImageFile(dstDir, "test.yuv");
             ImageBuf dstBuf = new ImageBuf();
@@ -199,6 +213,35 @@ public class TurboJpegJniTest {
             ImageUtil.writeImageFile(dstBuf.buf, dstDir + "/out", "decode_yuv_test.rgb");
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            int ret = jpegJni.tjDestroy(handle);
+            assertEquals(0, ret);
+        }
+    }
+
+    @Test
+    public void testEncodeYUV() {
+        long handle = jpegJni.tjInitCompress();
+        assertNotEquals(0, handle);
+
+        try {
+            JpegHeader header = readJpegHeader();
+
+            byte[] srcBuf = ImageUtil.readImageFile(dstDir, "test.rgb");
+
+            int pad = 1;
+            long bufSize = jpegJni.tjBufSizeYUV2(header.width, pad, header.height, header.jepgSubsamp);
+            byte[] dstBuf = new byte[(int) bufSize];
+
+            int ret = jpegJni.tjEncodeYUV3(handle, srcBuf, header.width, 0, header.height, TJPF.TJPF_RGB.ordinal()
+                    , dstBuf, pad, header.jepgSubsamp, 0);
+            assertEquals(0, ret);
+            ImageUtil.writeImageFile(dstBuf, dstDir + "/out", "encode_yuv_test.yuv");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            int ret = jpegJni.tjDestroy(handle);
+            assertEquals(0, ret);
         }
     }
 }

@@ -53,7 +53,7 @@ JNIEXPORT jlong JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjBufSizeYUV2
  * Signature: (J[BIIIILcom/alpha/turbojpeg/ImageBuf;III)I
  */
 JNIEXPORT jint JNICALL Java_com_alpha_turbojpeg_TurboJpegJni_tjEncodeYUV3
-        (JNIEnv *, jobject, jlong, jbyteArray, jint, jint, jint, jint, jobject, jint, jint, jint);
+        (JNIEnv *, jobject, jlong, jbyteArray, jint, jint, jint, jint, jbyteArray, jint, jint, jint);
 
 /*
  * Class:     com_alpha_turbojpeg_TurboJpegJni
