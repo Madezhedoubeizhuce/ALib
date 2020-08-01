@@ -1,2 +1,3 @@
+include ':libyuv'
 rootProject.name = 'ImageLib'
 include ':app', ':turbojpeg', ':breakpad'

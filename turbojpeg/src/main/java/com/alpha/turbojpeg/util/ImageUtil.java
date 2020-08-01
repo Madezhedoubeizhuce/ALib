@@ -21,8 +21,9 @@ public class ImageUtil {
         try {
             bis = new BufferedInputStream(new FileInputStream(imgFile));
             byte[] buf = new byte[1024];
-            while (bis.read(buf) != -1) {
-                byteOs.write(buf);
+            int readSize = 0;
+            while (( readSize = bis.read(buf)) != -1) {
+                byteOs.write(buf, 0, readSize);
             }
         } finally {
             close(bis);
