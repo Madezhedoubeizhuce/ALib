@@ -4,6 +4,10 @@ project(turbojpeg)
 
 include_directories(libjpeg-turbo)
 
+#MESSAGE(STATUS "operation system is ${CMAKE_SYSTEM}")
+
 add_subdirectory(libjpeg-turbo)
 add_subdirectory(demo)
-add_subdirectory(jni)
+IF (CMAKE_SYSTEM_NAME MATCHES "Android")
+    add_subdirectory(jni)
+ENDIF ()
