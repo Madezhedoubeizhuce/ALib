@@ -12,7 +12,14 @@ REM set JPEG_INCLUDE_DIR=
 cmake -G"MinGW Makefiles" -DTEST=ON ..
 cmake --build .
 make
+
+copy .\libyuv\libyuv.a .\demo
+copy .\libyuv\libyuv.dll .\demo
+
 cd ..
+
+xcopy /E /Y .\demo\img .\build\demo\img\
+
 goto end
 
 :clean

@@ -5,3 +5,4 @@ project(libyuv)
 include_directories(libyuv/include)
 
 add_subdirectory(libyuv)
+add_subdirectory(demo)
