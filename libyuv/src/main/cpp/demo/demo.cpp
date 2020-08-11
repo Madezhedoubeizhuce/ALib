@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "libyuv/convert.h"
+#include "libyuv/scale.h"
 
 int readImage(const char *image_path, uint8_t *image, int size)
 {
@@ -147,7 +148,7 @@ int ConvertI444ToI420(uint8_t *src_img, int width, int height, uint8_t **dst_img
         *dst_img,
         width,
         *dst_img + y_size,
-        (width + 1) /2,
+        (width + 1) / 2,
         *dst_img + y_size + u_size,
         (width + 1) / 2,
         width, height);
@@ -162,7 +163,61 @@ int ConvertI444ToI420(uint8_t *src_img, int width, int height, uint8_t **dst_img
     return 0;
 }
 
-int ConvertI422oNV21(uint8_t *src_img, int width, int height, uint8_t **dst_img, int *dst_size)
+int ConvertI444ToI420_1(uint8_t *src_img, int width, int height, uint8_t **dst_img, int *dst_size)
+{
+    if (src_img == NULL)
+    {
+        printf("src_img is null\n");
+        return -1;
+    }
+
+    int src_uv_size = width * height * 2;
+    int y_size = width * height;
+    int uv_size = ((width + 1) / 2) * ((height + 1) / 2) * 2;
+    *dst_size = y_size + uv_size;
+
+    if (*dst_img == NULL)
+    {
+        *dst_img = new uint8_t[*dst_size];
+    }
+
+    const uint8_t* src_y = src_img;
+    int src_stride_y = width;
+    const uint8_t* src_u = src_img + width * height;
+    int src_stride_u = width;
+    const uint8_t* src_v =  src_img + width * height * 2;
+    int src_stride_v = width;
+    uint8_t* dst_y = *dst_img;
+    int dst_stride_y = width;
+    uint8_t* dst_u = *dst_img + y_size;
+    int dst_stride_u = (width + 1) / 2;
+    uint8_t* dst_v = *dst_img + y_size + uv_size / 2;
+    int dst_stride_v = (width + 1) / 2;
+    int src_y_width = width;
+    int src_y_height = height;
+    int src_uv_width = width;
+    int src_uv_height = height;
+
+    const int dst_y_width = width;
+    const int dst_y_height = height;
+    const int dst_uv_width = (dst_y_width + 1) >> 1;
+    const int dst_uv_height = (dst_y_height + 1) >> 1;
+
+    if (dst_y) {
+        libyuv::ScalePlane(src_y, src_stride_y, src_y_width, src_y_height, dst_y,
+                dst_stride_y, dst_y_width, dst_y_height,  libyuv::kFilterBilinear);
+    }
+    libyuv::ScalePlane(src_u, src_stride_u, src_uv_width, src_uv_height, dst_u,
+                dst_stride_u, dst_uv_width, dst_uv_height,  libyuv::kFilterBilinear);
+    libyuv::ScalePlane(src_v, src_stride_v, src_uv_width, src_uv_height, dst_v,
+                dst_stride_v, dst_uv_width, dst_uv_height,  libyuv::kFilterBilinear);
+
+    printf("Complete\n");
+
+    return 0;
+}
+
+int ConvertI422ToNV21(uint8_t *src_img, int width, int height, uint8_t **dst_img, int *dst_size)
 {
     if (src_img == NULL)
     {
@@ -185,7 +240,7 @@ int ConvertI422oNV21(uint8_t *src_img, int width, int height, uint8_t **dst_img,
         width,
         src_img + width * height,
         (width + 1) / 2,
-        src_img + width * height + src_uv_size,
+        src_img + width * height + src_uv_size / 2,
         (width + 1) / 2,
         *dst_img,
         width,
@@ -204,13 +259,67 @@ int ConvertI422oNV21(uint8_t *src_img, int width, int height, uint8_t **dst_img,
     return 0;
 }
 
-void testI444ToI420() {
+int ConvertI444ToI422(uint8_t *src_img, int width, int height, uint8_t **dst_img, int *dst_size)
+{
+    if (src_img == NULL)
+    {
+        printf("src_img is null\n");
+        return -1;
+    }
+
+    int src_uv_size = width * height * 2;
+    int y_size = width * height;
+    int uv_size = ((width + 1) / 2) * height * 2;
+    *dst_size = y_size + uv_size;
+
+    if (*dst_img == NULL)
+    {
+        *dst_img = new uint8_t[*dst_size];
+    }
+
+    const uint8_t* src_y = src_img;
+    int src_stride_y = width;
+    const uint8_t* src_u = src_img + width * height;
+    int src_stride_u = width;
+    const uint8_t* src_v =  src_img + width * height * 2;
+    int src_stride_v = width;
+    uint8_t* dst_y = *dst_img;
+    int dst_stride_y = width;
+    uint8_t* dst_u = *dst_img + y_size;
+    int dst_stride_u = (width + 1) / 2;
+    uint8_t* dst_v = *dst_img + y_size + uv_size / 2;
+    int dst_stride_v = (width + 1) / 2;
+    int src_y_width = width;
+    int src_y_height = height;
+    int src_uv_width = width;
+    int src_uv_height = height;
+
+    const int dst_y_width = width;
+    const int dst_y_height = height;
+    const int dst_uv_width = (dst_y_width + 1) >> 1;
+    const int dst_uv_height = dst_y_height;
+
+    if (dst_y) {
+        libyuv::ScalePlane(src_y, src_stride_y, src_y_width, src_y_height, dst_y,
+                dst_stride_y, dst_y_width, dst_y_height,  libyuv::kFilterBilinear);
+    }
+     libyuv::ScalePlane(src_u, src_stride_u, src_uv_width, src_uv_height, dst_u,
+                dst_stride_u, dst_uv_width, dst_uv_height,  libyuv::kFilterBilinear);
+     libyuv::ScalePlane(src_v, src_stride_v, src_uv_width, src_uv_height, dst_v,
+                dst_stride_v, dst_uv_width, dst_uv_height,  libyuv::kFilterBilinear);
+
+    printf("Complete\n");
+
+    return 0;
+}
+
+void testI444ToI422() {
     int img_width = 500, img_height = 333;
     int src_size = img_width * img_height * 3;
 
     uint8_t *src_img = new uint8_t[src_size];
 
-    if (readImage("./img/test.yuv", src_img, src_size) != 0)
+    if (readImage("./img/test_500_333.i444", src_img, src_size) != 0)
     {
         printf("read image failed\n");
         delete[] src_img;
@@ -220,7 +329,7 @@ void testI444ToI420() {
     uint8_t *dst_img = NULL;
     int dst_size = 0;
 
-    int ret = ConvertI444ToI420(src_img, img_width, img_height, &dst_img, &dst_size);
+    int ret = ConvertI444ToI422(src_img, img_width, img_height, &dst_img, &dst_size);
 
     if (ret != 0)
     {
@@ -231,7 +340,43 @@ void testI444ToI420() {
         return;
     }
 
-    if (writeImage("./img/result.i420", dst_img, dst_size) != 0)
+    if (writeImage("./img/result_500_333.i422", dst_img, dst_size) != 0)
+    {
+        printf("write image failed\n");
+        delete[] src_img;
+        if (dst_img != NULL)
+            delete[] dst_img;
+    }
+}
+
+void testI444ToI420() {
+    int img_width = 500, img_height = 333;
+    int src_size = img_width * img_height * 3;
+
+    uint8_t *src_img = new uint8_t[src_size];
+
+    if (readImage("./img/test_500_333.i444", src_img, src_size) != 0)
+    {
+        printf("read image failed\n");
+        delete[] src_img;
+        return;
+    }
+
+    uint8_t *dst_img = NULL;
+    int dst_size = 0;
+
+    int ret = ConvertI444ToI420_1(src_img, img_width, img_height, &dst_img, &dst_size);
+
+    if (ret != 0)
+    {
+        printf("I444ToNV21 failed, ret %d\n", ret);
+        delete[] src_img;
+        if (dst_img != NULL)
+            delete[] dst_img;
+        return;
+    }
+
+    if (writeImage("./img/result_500_333.i420", dst_img, dst_size) != 0)
     {
         printf("write image failed\n");
         delete[] src_img;
@@ -247,7 +392,7 @@ void testI444ToNV12()
 
     uint8_t *src_img = new uint8_t[src_size];
 
-    if (readImage("./img/test.yuv", src_img, src_size) != 0)
+    if (readImage("./img/test_500_333.i444", src_img, src_size) != 0)
     {
         printf("read image failed\n");
         delete[] src_img;
@@ -268,7 +413,7 @@ void testI444ToNV12()
         return;
     }
 
-    if (writeImage("./img/result.nv12", dst_img, dst_size) != 0)
+    if (writeImage("./img/result_500_333.nv12", dst_img, dst_size) != 0)
     {
         printf("write image failed\n");
         delete[] src_img;
@@ -284,7 +429,7 @@ void testI444ToNV21()
 
     uint8_t *src_img = new uint8_t[src_size];
 
-    if (readImage("./img/test.yuv", src_img, src_size) != 0)
+    if (readImage("./img/test_500_333.i444", src_img, src_size) != 0)
     {
         printf("read image failed\n");
         delete[] src_img;
@@ -305,7 +450,7 @@ void testI444ToNV21()
         return;
     }
 
-    if (writeImage("./img/result.nv21", dst_img, dst_size) != 0)
+    if (writeImage("./img/result_500_333.nv21", dst_img, dst_size) != 0)
     {
         printf("write image failed\n");
         delete[] src_img;
@@ -317,12 +462,12 @@ void testI444ToNV21()
 void testI422ToNV21()
 {
     printf("testI422ToNV21\n");
-    int img_width = 640, img_height = 480;
+    int img_width = 500, img_height = 333;
     int src_size = img_width * img_height * 2;
 
     uint8_t *src_img = new uint8_t[src_size];
 
-    if (readImage("./img/img_640_480.i422", src_img, src_size) != 0)
+    if (readImage("./img/test_500_333.i422", src_img, src_size) != 0)
     {
         printf("read image failed\n");
         delete[] src_img;
@@ -333,7 +478,7 @@ void testI422ToNV21()
     int dst_size = 0;
     printf("ConvertI422oNV21 \n");
 
-    int ret = ConvertI422oNV21(src_img, img_width, img_height, &dst_img, &dst_size);
+    int ret = ConvertI422ToNV21(src_img, img_width, img_height, &dst_img, &dst_size);
 
     if (ret != 0)
     {
@@ -344,7 +489,7 @@ void testI422ToNV21()
         return;
     }
 
-    if (writeImage("./img/result_422.nv21", dst_img, dst_size) != 0)
+    if (writeImage("./img/result_500_333_1.nv21", dst_img, dst_size) != 0)
     {
         printf("write image failed\n");
         delete[] src_img;
@@ -357,10 +502,11 @@ int main(int argc, char* argv[])
 {
     printf("test libyuv\n");
 
+    testI444ToI420();
+    // testI444ToI422();
     // testI444ToNV21();
-    // testI444ToI420();
     // testI444ToNV12();
-    testI422ToNV21();
+    // testI422ToNV21();
 
     return 0;
 }
