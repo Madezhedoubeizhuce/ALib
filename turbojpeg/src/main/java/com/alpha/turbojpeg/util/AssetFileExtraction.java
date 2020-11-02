@@ -35,8 +35,9 @@ public class AssetFileExtraction {
                 }
                 bos = new BufferedOutputStream(new FileOutputStream(extractFile));
                 byte[] buf = new byte[1024];
-                while (is.read(buf) != -1) {
-                    bos.write(buf);
+                int readSize;
+                while ((readSize = is.read(buf)) != -1) {
+                    bos.write(buf, 0, readSize);
                 }
             } finally {
                 close(is);
